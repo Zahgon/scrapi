@@ -11,12 +11,6 @@ from scrapi.base.helpers import updated_schema
 from scrapi.base import OAIHarvester
 
 
-def umontreal_language_processor(languages):
-
-    if not languages:
-        languages = []
-
-    return languages
 
 
 class UmontrealHarvester(OAIHarvester):
@@ -26,11 +20,6 @@ class UmontrealHarvester(OAIHarvester):
 
     base_url = 'http://papyrus.bib.umontreal.ca/oai/request'
 
-    @property
-    def schema(self):
-        return updated_schema(self._schema, {
-            'languages': ('//dc:language/node()', umontreal_language_processor)
-        })
 
     property_list = ['identifier', 'type', 'format', 'setSpec']
 

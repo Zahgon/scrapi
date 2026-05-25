@@ -105,9 +105,6 @@ class ClinicalTrialsHarvester(XMLHarvester):
         )
     }
 
-    @property
-    def namespaces(self):
-        return None
 
     def harvest(self, start_date=None, end_date=None):
         """ First, get a list of all recently updated study urls,

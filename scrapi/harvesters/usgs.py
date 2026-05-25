@@ -14,19 +14,6 @@ from scrapi.base.helpers import build_properties, datetime_formatter
 logger = logging.getLogger(__name__)
 
 
-def process_contributors(authors):
-    all_processed_authors = []
-
-    for author in authors:
-        author_d = {}
-        author_d['name'] = author['text']
-        name = HumanName(
-            author['text']
-        )
-        author_d['additionalName'] = name.middle
-        author_d['givenName'] = name.first
-        author_d['familyName'] = name.last
-    return all_processed_authors
 
 
 class USGSHarvester(JSONHarvester):

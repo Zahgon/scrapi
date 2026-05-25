@@ -29,64 +29,6 @@ DEFAULT_ENCODING = 'UTF-8'
 DATAONE_SOLR_ENDPOINT = 'https://cn.dataone.org/cn/v1/query/solr/'
 
 
-def process_contributors(author, submitters, contributors,
-                         investigators):
-    if not author:
-        author = ''
-    elif isinstance(author, list):
-        author = author[0]
-
-    if not isinstance(contributors, list):
-        contributors = [contributors]
-
-    if not isinstance(investigators, list):
-        investigators = [investigators]
-
-    unique_contributors = list(set([author] + contributors + investigators))
-
-    if len(unique_contributors) < 1:
-        return []
-
-    # this is the index of the author in the unique_contributors list
-    if author != '':
-        author_index = unique_contributors.index(author)
-    else:
-        author_index = None
-
-    # grabs the email if there is one, this should go with the author index
-    email = ''
-    for submitter in submitters:
-        if '@' in submitter:
-            email = submitter
-
-    contributor_list = []
-    for index, contributor in enumerate(unique_contributors):
-        if author_index is not None and index == author_index:
-            # if contributor == NAME and email != '':
-            #     # TODO - maybe add this back in someday
-            #       sometimes this yields really weird names like mjg4
-            #     # TODO - names not always perfectly lined up with emails...
-            #     contributor = name_from_email(email)
-            name = HumanName(contributor)
-            contributor_dict = {
-                'name': contributor,
-                'givenName': name.first,
-                'additionalName': name.middle,
-                'familyName': name.last,
-            }
-            if email:
-                contributor_dict['email'] = email
-            contributor_list.append(contributor_dict)
-        else:
-            name = HumanName(contributor)
-            contributor_list.append({
-                'name': contributor,
-                'givenName': name.first,
-                'additionalName': name.middle,
-                'familyName': name.last,
-            })
-
-    return contributor_list
 
 
 class DataOneHarvester(XMLHarvester):

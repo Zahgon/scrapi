@@ -36,10 +36,6 @@ class DatabaseManager(BaseDatabaseManager):
         pass
 
 
-def paginated(query, page_size=10):
-    for offset in range(0, query.count(), page_size):
-        for doc in query[offset:offset + page_size]:
-            yield doc
 
 
 class PostgresProcessor(BaseProcessor):
@@ -47,19 +43,6 @@ class PostgresProcessor(BaseProcessor):
 
     manager = DatabaseManager()
 
-    def documents(self, *sources):
-        q = Document.objects.all()
-        querysets = (q.filter(source=source) for source in sources) if sources else [q]
-        for query in querysets:
-            for doc in paginated(query):
-                try:
-                    raw = RawDocument(doc.raw, clean=False, validate=False)
-                except AttributeError as e:
-                    logger.info('{}  -- Malformed rawdoc in database, skipping'.format(e))
-                    raw = None
-                    continue
-                normalized = NormalizedDocument(doc.normalized, validate=False, clean=False) if doc.normalized else None
-                yield DocumentTuple(raw, normalized)
 
     def get(self, source, docID):
         try:
@@ -163,41 +146,16 @@ class HarvesterResponseModel(BaseHarvesterResponse):
         else:
             self.response = args[0]
 
-    @property
-    def method(self):
-        return str(self.response.method)
 
     @property
     def url(self):
         return str(self.response.url)
 
-    @property
-    def ok(self):
-        return bool(self.response.ok)
 
-    @property
-    def content(self):
-        if isinstance(self.response.content, memoryview):
-            return self.response.content.tobytes()
-        if isinstance(self.response.content, bytes):
-            return self.response.content
-        return str(self.response.content)
 
-    @property
-    def encoding(self):
-        return str(self.response.encoding)
 
-    @property
-    def headers_str(self):
-        return str(self.response.headers_str)
 
-    @property
-    def status_code(self):
-        return int(self.response.status_code)
 
-    @property
-    def time_made(self):
-        return str(self.response.time_made)
 
     def save(self, *args, **kwargs):
         self.response.save()

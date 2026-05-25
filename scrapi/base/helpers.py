@@ -32,8 +32,6 @@ def CONSTANT(x):
         >>> CONSTANT([123, 456])()
         [123, 456]
     '''
-    def inner(*y, **z):
-        return x
     return inner
 
 
@@ -94,8 +92,6 @@ def compose(*functions):
         >>> compose(int, divide2, compose(add3, add3), add)(7, 3)
         8
     '''
-    def inner(func1, func2):
-        return lambda *x, **y: func1(func2(*x, **y))
     return functools.reduce(inner, functions)
 
 
@@ -139,7 +135,7 @@ def maybe_parse_name(name):
     ''' Tries to parse a name. If the parsing fails, returns a dictionary
         with just the unparsed name (as per the SHARE schema)
     '''
-    return null_on_error(parse_name)(name) or {'name': name}
+    pass
 
 
 def parse_name(name):
@@ -293,11 +289,6 @@ def language_codes(langs):
     return list(filter(lambda x: x, map(get_code, langs)))
 
 
-def get_code(language):
-    try:
-        return languages.get(name=language).bibliographic
-    except KeyError:
-        return None
 
 
 def oai_get_records_and_token(url, throttle, force, namespaces, verify):
@@ -329,26 +320,10 @@ def oai_get_records_and_token(url, throttle, force, namespaces, verify):
     return records, token
 
 
-def extract_doi_from_text(identifiers):
-    identifiers = [identifiers] if not isinstance(identifiers, list) else identifiers
-    for item in identifiers:
-        try:
-            found_url = DOI_REGEX.search(item).group()
-            return 'http://dx.doi.org/{}'.format(found_url.replace('doi:', ''))
-        except AttributeError:
-            continue
 
 
 def null_on_error(task, log=True):
     '''Decorator that makes a function return None on exception'''
-    def inner(*args, **kwargs):
-        try:
-            return task(*args, **kwargs)
-        except Exception as e:
-            if log:
-                logger = logging.getLogger('scrapi.base.helpers.null_on_error')
-                logger.warn(e)
-            return None
     return inner
 
 
@@ -386,21 +361,6 @@ def datetime_formatter(datetime_string):
     return date_time.isoformat()
 
 
-def doe_name_parser(name):
-    if name.strip() == 'None':
-        return {'name': ''}
-    name, orcid = extract_and_replace_one(name, DOE_ORCID_REGEX)
-    name, email = extract_and_replace_one(name, DOE_EMAIL_REGEX)
-    name, affiliations = doe_extract_affiliations(name)
-
-    parsed_name = maybe_parse_name(name)
-    if affiliations:
-        parsed_name['affiliation'] = list(map(doe_parse_affiliation, affiliations))
-    if orcid:
-        parsed_name['sameAs'] = ['https://orcid.org/{}'.format(orcid)]
-    if email:
-        parsed_name['email'] = email
-    return parsed_name
 
 
 def extract_and_replace_one(text, pattern):
@@ -424,21 +384,11 @@ def extract_and_replace_one(text, pattern):
         >>> match is None
         True
     '''
-    matches = pattern.findall(text)
-    if matches and len(matches) == 1:
-        return text.replace(matches[0][0], ''), matches[0][1]
-    return text, None
+    pass
 
 
-def doe_extract_affiliations(name):
-    affiliations = DOE_AFFILIATIONS_REGEX.findall(name)
-    for affiliation in affiliations:
-        name = name.replace('[{}]'.format(affiliation), '')
-    return name, affiliations
 
 
-def doe_parse_affiliation(affiliation):
-    return {'name': affiliation}  # TODO: Maybe parse out address?
 
 
 def doe_process_contributors(names):

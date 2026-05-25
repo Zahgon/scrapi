@@ -73,13 +73,6 @@ class BaseHarvester(object):
     def normalize(self, raw_doc):
         raise NotImplementedError
 
-    @property
-    def run_at(self):
-        return {
-            'hour': 22,
-            'minute': 59,
-            'day_of_week': 'mon-sun',
-        }
 
 
 class JSONHarvester(BaseHarvester, JSONTransformer):
@@ -139,34 +132,10 @@ class OAIHarvester(XMLHarvester):
     force_request_update = False
     verify = True
 
-    @property
-    def schema(self):
-        return self._schema
 
-    @property
-    def _schema(self):
-        return updated_schema(OAISCHEMA, self.formatted_properties)
 
-    @property
-    def formatted_properties(self):
-        return {
-            'otherProperties': build_properties(*list(map(self.format_property, self.property_list)))
-        }
 
-    def format_property(self, property):
-        if property == 'date':
-            fn = compose(lambda x: list(map(null_on_error(datetime_formatter), x)), coerce_to_list, self.resolve_property)
-        else:
-            fn = self.resolve_property
-        return (property, (
-            '//dc:{}/node()'.format(property),
-            '//ns0:{}/node()'.format(property),
-            fn)
-        )
 
-    def resolve_property(self, dc, ns0):
-        ret = dc + ns0
-        return ret[0] if len(ret) == 1 else ret
 
     def harvest(self, start_date=None, end_date=None):
 

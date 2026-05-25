@@ -16,11 +16,6 @@ class ScholarsarchiveosuHarvester(OAIHarvester):
 
     base_url = 'http://ir.library.oregonstate.edu/oai/request'
 
-    @property
-    def schema(self):
-        return helpers.updated_schema(self._schema, {
-            "uris": ('//dc:identifier/node()', helpers.oai_process_uris)
-        })
 
     # TODO - return date once we figure out es parsing errors
     property_list = ['relation', 'identifier', 'type', 'setSpec']

@@ -43,8 +43,7 @@ def daterange(start_date, end_date):
     """
     Get all the dates between the start_date and the end_date
     """
-    for ordinal in range(start_date.toordinal(), end_date.toordinal()):
-        yield date.fromordinal(ordinal)
+    pass
 
 
 def get_days_of_week(start_date, end_date, day_of_week):
@@ -64,10 +63,7 @@ def get_fiscal_year(mydate=date.today()):
     """
     Return the current fiscal year. Each fiscal year starts on October 1
     """
-    if mydate.month < 10:
-        return mydate.year
-    else:
-        return mydate.year + 1
+    pass
 
 
 def get_fiscal_years(dates):
@@ -143,17 +139,13 @@ def xml_records(files):
             yield record
 
 
-def add_affiliation(name, org_name):
-    name['affiliation'] = [{'name': org_name.text}]
-    return name
 
 
 def nih_name_parser(names, org_name):
     """
     Takes a list of names and organization names, and attempts to parse them
     """
-    names = default_name_parser(names)
-    return list(map(add_affiliation, names, org_name))
+    pass
 
 
 class NIHHarvesters(XMLHarvester):
@@ -166,68 +158,8 @@ class NIHHarvesters(XMLHarvester):
     DEFAULT_ENCODING = 'UTF-8'
     record_encoding = None
 
-    @property
-    def schema(self):
-        return {
-            "contributors": ('//PIS/PI/PI_NAME/node()', '//ORG_NAME', nih_name_parser),
-            "uris": {
-                "canonicalUri": ("//APPLICATION_ID/node()", compose(self.construct_project_url, single_result)),
-                "descriptorUris": ("//APPLICATION_ID/node()", "//FOA_NUMBER/node()",
-                                   self.construct_descriptor_uris)
-            },
-            "providerUpdatedDateTime": ("AWARD_NOTICE_DATE/node()", compose(datetime_formatter, single_result)),
-            "title": ('//PROJECT_TITLE/node()', single_result),
-            "tags": ('//PROJECT_TERMSX/TERM/node()'),
-            "otherProperties": build_properties(
-                ("applicationID", "//APPLICATION_ID/node()"),
-                ('activity', '//ACTIVITY/node()'),
-                ('administeringIC', '//ADMINISTERING_IC/node()'),
-                ('arraFunded', '//ARRA_FUNDED/node()'),
-                ('budgetStart', '//BUDGET_START/node()'),
-                ('budgetEnd', '//BUDGET_END/node()'),
-                ('FOANumber', '//FOA_NUMBER/node()'),
-                ('fullProjectNumber', '//FULL_PROJECT_NUM/node()'),
-                ('fundingICs', '//FUNDING_ICs/node()'),
-                ('fiscalYear', '//FY/node()'),
-                ('NIHSpendingCats', '//NIH_SPENDING_CATS/@xsi:nil'),
-                ('organizationCity', '//ORG_CITY/node()'),
-                ('organizationCountry', '//ORG_CONTRY/node()'),
-                ('organizationDistrict', '//ORG_DISTRICT/node()'),
-                ('organizationDUNS', '//ORG_DUNS/node()'),
-                ('organizationDept', '//ORG_DEPT/node()'),
-                ('organizationFIPS', '//ORG_FIPS/node()'),
-                ('organizationState', '//ORG_STATE/node()'),
-                ('organizationZipcode', '//ORG_ZIPCODE/node()'),
-                ('ICName', '//IC_NAME/node()'),
-                ('organizationName', '//ORG_NAME/node()'),
-                ('projectStart', '//PROJECT_START/node()'),
-                ('projectEnd', '//PROJECT_END/node()'),
-                ('PHR', '//PHR/node()'),
-                ('serialNumber', '//SERIAL_NUMBER/node()'),
-                ('studySection', '//STUDY_SECTION/node()'),
-                ('studySectionName', '//STUDY_SECTION_NAME/node()'),
-                ('supportYear', '//SUPPORT_YEAR/node()'),
-                ('suffix', '//SUFFIX/node()'),
-                ('subProjectID', '//SUBPROJECT_ID/@xsi:nil'),
-                ('totalCost', '//TOTAL_COST/node()'),
-                ('totalCostSubProject', '//TOTAL_COST_SUB_PROJECT/node()'),
-                ('coreProjectNumber', '//CORE_PROJECT_NUM/node()'),
-                ('CFDACode', '//CFDA_CODE/node()'),
-                ('programOfficerName', '//PROGRAM_OFFICER_NAME/node()'),
-                ('edInstType', '//ED_INST_TYPE/node()'),
-                ('awardNoticeDate', '//AWARD_NOTICE_DATE/node()'),
-                ('fundingMechanism', '//FUNDING_MECHANISM/node()')
-            )
-        }
 
-    def construct_project_url(self, application_id):
-        return self.project_base_url.format(application_id)
 
-    def construct_descriptor_uris(self, application_id, foa_number):
-        return [
-            self.project_base_url.format(application_id[0]) if application_id else None,
-            self.foa_base_url.format(foa_number[0] if foa_number else None)
-        ]
 
     namespaces = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
 

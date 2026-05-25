@@ -20,24 +20,6 @@ class _Registry(dict):
         except KeyError:
             raise KeyError('No harvester named "{}"'.format(key))
 
-    def freeze(self, o):
-        if isinstance(o, dict):
-            return frozenset({k: self.freeze(v) for k, v in o.items()}.items())
-        elif isinstance(o, list):
-            return tuple(map(self.freeze, o))
-        return o
 
-    @property
-    def beat_schedule(self):
-        from celery.schedules import crontab
-        return {
-            'run_{}'.format(name): {
-                'args': [name],
-                'schedule': crontab(**inst.run_at),
-                'task': 'scrapi.tasks.run_harvester',
-            }
-            for name, inst
-            in self.items()
-        }
 
 sys.modules[__name__] = _Registry()

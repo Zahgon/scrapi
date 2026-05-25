@@ -18,15 +18,6 @@ class DataciteHarvester(OAIHarvester):
     property_list = ['date', 'identifier', 'setSpec', 'description']
     timezone_granularity = True
 
-    @property
-    def schema(self):
-        return updated_schema(self._schema, {
-            "description": ("//dc:description/node()", get_second_description),
-            "uris": {
-                "canonicalUri": ('//dc:identifier/node()', compose(single_result, oai_extract_dois)),
-                "objectUris": ('//dc:identifier/node()', oai_extract_dois)
-            }
-        })
 
 
 def get_second_description(descriptions):
@@ -34,4 +25,4 @@ def get_second_description(descriptions):
     a longer kind of abstract. If there are two options, pick the second one which
     is almost always the longer abstract
     '''
-    return descriptions[-1] if descriptions else None
+    pass

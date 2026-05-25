@@ -23,39 +23,8 @@ from scrapi.base.helpers import build_properties, compose, datetime_formatter
 logger = logging.getLogger(__name__)
 
 
-def process_contributor(author, orcid):
-    name = HumanName(author)
-    ret = {
-        'name': author,
-        'givenName': name.first,
-        'additionalName': name.middle,
-        'familyName': name.last,
-        'sameAs': [orcid] if orcid else []
-    }
-    return ret
 
 
-def process_sponsorships(funder):
-    sponsorships = []
-
-    for element in funder:
-        sponsorship = {}
-
-        if element.get('name'):
-            sponsorship['sponsor'] = {
-                'sponsorName': element['name']
-            }
-
-        if element.get('award'):
-            sponsorship['award'] = {
-                'awardName': ', '.join(element['award'])
-            }
-            if element.get('DOI'):
-                sponsorship['award']['awardIdentifier'] = 'http://dx.doi.org/{}'.format(element['DOI'])
-
-        sponsorships.append(sponsorship)
-
-    return sponsorships
 
 
 class CrossRefHarvester(JSONHarvester):
@@ -67,46 +36,6 @@ class CrossRefHarvester(JSONHarvester):
 
     record_encoding = None
 
-    @property
-    def schema(self):
-        return {
-            'title': ('/title', lambda x: x[0] if x else ''),
-            'description': ('/subtitle', lambda x: x[0] if (isinstance(x, list) and x) else x or ''),
-            'providerUpdatedDateTime': ('/issued/date-parts',
-                                        compose(datetime_formatter, lambda x: ' '.join([str(part) for part in x[0]]))),
-            'uris': {
-                'canonicalUri': '/URL'
-            },
-            'contributors': ('/author', compose(lambda x: [
-                process_contributor(*[
-                    '{} {}'.format(entry.get('given'), entry.get('family')),
-                    entry.get('ORCID')
-                ]) for entry in x
-            ], lambda x: x or [])),
-            'sponsorships': ('/funder', lambda x: process_sponsorships(x) if x else []),
-            'tags': ('/subject', '/container-title', lambda x, y: [tag.lower() for tag in (x or []) + (y or [])]),
-            'subjects': ('/subject', '/container-title', lambda x, y: [tag.lower() for tag in (x or []) + (y or [])]),
-            'otherProperties': build_properties(
-                ('journalTitle', '/container-title'),
-                ('volume', '/volume'),
-                ('issue', '/issue'),
-                ('publisher', '/publisher'),
-                ('type', '/type'),
-                ('ISSN', '/ISSN'),
-                ('ISBN', '/ISBN'),
-                ('member', '/member'),
-                ('score', '/score'),
-                ('issued', '/issued'),
-                ('deposited', '/deposited'),
-                ('indexed', '/indexed'),
-                ('page', '/page'),
-                ('issue', '/issue'),
-                ('volume', '/volume'),
-                ('referenceCount', '/reference-count'),
-                ('updatePolicy', '/update-policy'),
-                ('depositedTimestamp', '/deposited/timestamp')
-            )
-        }
 
     def harvest(self, start_date=None, end_date=None):
         start_date = start_date or date.today() - timedelta(settings.DAYS_BACK)

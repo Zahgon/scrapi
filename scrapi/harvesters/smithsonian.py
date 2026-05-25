@@ -14,11 +14,6 @@ class SiHarvester(OAIHarvester):
     long_name = 'Smithsonian Digital Repository'
     url = 'http://repository.si.edu'
 
-    @property
-    def schema(self):
-        return helpers.updated_schema(self._schema, {
-            "uris": ('//dc:identifier/node()', helpers.oai_process_uris)
-        })
 
     base_url = 'http://repository.si.edu/oai/request'
     property_list = ['date', 'identifier', 'type', 'format', 'setSpec']

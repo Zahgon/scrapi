@@ -15,21 +15,6 @@ from scrapi.base import JSONHarvester
 from scrapi.linter.document import RawDocument
 
 
-def process_owner(owners_id):
-    resp = requests.get("https://stepic.org/api/users/" + str(owners_id)).json()
-    try:
-        person = resp[u'users'][0]
-    except KeyError:
-        person = {u'first_name': '', u'last_name': ''}
-    owner = {
-        'name': " ".join([person[u'first_name'], person[u'last_name']]),
-        'givenName': person[u'first_name'],
-        'additionalName': '',
-        'familyName': person[u'last_name'],
-        'email': '',
-        'sameAs': [],
-    }
-    return [owner]
 
 
 class StepicHarvester(JSONHarvester):
@@ -40,18 +25,6 @@ class StepicHarvester(JSONHarvester):
 
     URL = 'https://stepic.org/api/lessons'
 
-    @property
-    def schema(self):
-        return {
-            'contributors': ('/owner', process_owner),
-            'uris': {
-                'canonicalUri': ('/id', lambda x: self.url + '/' + str(x))
-            },
-            'title': '/title',
-            'providerUpdatedDateTime': ('/update_date', lambda x: parse(x).isoformat()),
-            'description': '/title',
-            'languages': ('/language', lambda x: [pycountry.languages.get(alpha2=x).terminology])
-        }
 
     def harvest(self, start_date=None, end_date=None):
         # TODO - stepic has no means of querying by date, we should add handling for the

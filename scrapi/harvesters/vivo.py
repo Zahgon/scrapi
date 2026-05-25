@@ -26,15 +26,6 @@ from scrapi.base.helpers import build_properties, datetime_formatter
 logger = logging.getLogger(__name__)
 
 
-def process_object_uris(pmid, doi):
-    ret = []
-    if pmid:
-        pmid = 'http://www.ncbi.nlm.nih.gov/pubmed/{}'.format(pmid)
-        ret.append(pmid)
-    if doi:
-        doi = 'https://dx.doi.org/{}'.format(doi)
-        ret.append(doi)
-    return ret
 
 
 class VIVOHarvester(JSONHarvester):
@@ -172,32 +163,6 @@ class VIVOHarvester(JSONHarvester):
                 author['sameAs'].append(orcidId)
         return authors
 
-    @property
-    def schema(self):
-        return {
-            'title': ('/title', lambda x: x if x else ''),
-            'providerUpdatedDateTime': ('/date', datetime_formatter),
-            'uris': {
-                'canonicalUri': '/uri',
-                'providerUris': ('/uri', lambda x: [x]),
-                'objectUris': ('/pmid', '/doi', process_object_uris)
-            },
-            'contributors': '/authors',
-            'subjects': '/subjects',
-            'tags': '/keywords',
-            'publisher': ('/publisher', lambda x: {'name': x} if x else ''),
-            'otherProperties': build_properties(
-                ('journalTitle', '/journalTitle'),
-                ('abstract', ('/abstract', lambda x: x if x else '')),
-                ('type', '/types'),
-                ('ISSN', ('/issn', lambda x: x if x else '')),
-                ('number', '/number'),
-                ('ISBN', '/isbn'),
-                ('startPage', '/startPage'),
-                ('endPage', '/endPage'),
-                ('volume', '/volume'),
-            )
-        }
 
     def harvest(self, start_date=None, end_date=None):
         start_date = start_date or date.today() - timedelta(settings.DAYS_BACK)

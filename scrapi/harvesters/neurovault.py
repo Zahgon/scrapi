@@ -21,16 +21,8 @@ from scrapi.base.helpers import (build_properties, datetime_formatter,
 logger = logging.getLogger(__name__)
 
 
-def process_contributors(authors):
-
-    if authors is None:
-        return []
-    authors = re.split(',\s|\sand\s', authors)
-    return default_name_parser(authors)
 
 
-def filter_none(l):
-    return list(filter(lambda x: x, l))
 
 
 class NeuroVaultHarvester(JSONHarvester):
@@ -38,22 +30,6 @@ class NeuroVaultHarvester(JSONHarvester):
     long_name = 'NeuroVault.org'
     url = 'http://www.neurovault.org/'
 
-    @property
-    def schema(self):
-        return {
-            'contributors': ('/authors', process_contributors),
-            'uris': {
-                'objectUris': ('/url', '/full_dataset_url', compose(filter_none, lambda x, y: [x, y])),
-                'descriptorUris': ('/DOI', '/paper_url', compose(filter_none, lambda x, y: [('http://dx.doi.org/{}'.format(x) if x else None), y])),
-                'canonicalUri': '/url',
-            },
-            'title': '/name',
-            'providerUpdatedDateTime': ('/modify_date', datetime_formatter),
-            'description': '/description',
-            'otherProperties': build_properties(
-                ('owner_name', '/owner_name'),
-            )
-        }
 
     def harvest(self, start_date=None, end_date=None):
 

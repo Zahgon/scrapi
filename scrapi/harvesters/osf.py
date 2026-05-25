@@ -28,15 +28,6 @@ logger = logging.getLogger(__name__)
 url_from_guid = 'https://osf.io{}'.format
 
 
-def process_contributors(authors):
-
-    contributor_list = []
-    for person in authors:
-        contributor = parse_name(person['fullname'])
-        contributor['sameAs'] = [url_from_guid(person['url'])]
-        contributor_list.append(contributor)
-
-    return contributor_list
 
 
 class OSFHarvester(JSONHarvester):
@@ -50,28 +41,6 @@ class OSFHarvester(JSONHarvester):
           ' AND registered_date:[{} TO {}]' +\
           ' AND NOT title=test AND NOT title="Test Project"&size=1000'
 
-    @property
-    def schema(self):
-        return {
-            'contributors': ('/contributors', process_contributors),
-            'title': ('/title', lambda x: x or ''),
-            'providerUpdatedDateTime': ('/date_registered', datetime_formatter),
-            'description': '/description',
-            'uris': {
-                'canonicalUri': ('/url', url_from_guid),
-                'providerUris': ('/url', compose(coerce_to_list, url_from_guid))
-            },
-            'tags': '/tags',
-            'otherProperties': build_properties(
-                ('parent_title', '/parent_title'),
-                ('category', '/category'),
-                ('wiki_link', '/wiki_link'),
-                ('is_component', '/is_component'),
-                ('is_registration', '/is_registration'),
-                ('parent_url', '/parent_url'),
-                ('journal Id', '/journal Id')
-            )
-        }
 
     def harvest(self, start_date=None, end_date=None):
         # Always harvest a 2 day period starting 2 days back to honor time given

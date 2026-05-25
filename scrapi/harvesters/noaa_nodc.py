@@ -41,98 +41,40 @@ logger = logging.getLogger(__name__)
 
 def filter_to_publishers(parties):
     '''Reduce list of ResponsibleParty elements to just publishers'''
-    return filter_responsible_parties(parties, ['publisher'])
+    pass
 
 
 def filter_to_contributors(parties):
     '''Reduce list of ResponsibleParty elements to just contributors'''
-    return filter_responsible_parties(parties, ['resourceProvider'])
+    pass
 
 
 def filter_responsible_parties(parties, roles):
     '''Return list of ResponsibleParties whose role is in roles param'''
-    return [party for party in parties if party.xpath(
-        './gmd:role/gmd:CI_RoleCode/node()', namespaces=party.nsmap
-    )[0] in roles]
+    pass
 
 
 def parse_contributors(parties):
     '''Turn list of gmd:CI_ResponsibleParty elements into
     SHARE-compliant contributors list
     '''
-
-    # The NODC schema doesn't explicitly distinguish between
-    # organizations and individuals.  Every party has an
-    # organizationName tag, individuals have an individualName tag as well.
-    contributors = []
-    for party in parties:
-        contributor = {}
-        individual = extract_individual(party)
-        organization = extract_organization(party)
-        if individual:
-            contributor = individual
-            if organization:
-                contributor['affiliation'] = [organization]
-        elif organization:
-            contributor = organization
-
-        # the email address is tied to the party, so wait until we know
-        # who the contributor is before extracting
-        email = party.xpath('./gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress', namespaces=party.nsmap)
-        if email:
-            contributor['email'] = xml_text_only(email[0])
-        contributors.append(contributor)
-
-    return contributors
+    pass
 
 
 def extract_individual(party):
     '''Return SHARE-compliant person object from a CI_ResponsibleParty element'''
-    individual = party.xpath('./gmd:individualName/gmx:Anchor', namespaces=party.nsmap)
-    if individual:
-        name = HumanName(individual[0].text)
-        ns_prefix = party.nsmap['xlink']
-        sameAs = individual[0].get('{' + ns_prefix + '}href')
-
-        individual = {
-            'name': individual[0].text,
-            'givenName': name.first,
-            'additionalName': name.middle,
-            'familyName': name.last
-        }
-
-        if sameAs:
-            individual['sameAs'] = [sameAs]
-
-        return individual
+    pass
 
 
 def extract_organization(party):
     '''Return SHARE-compliant organization object from a CI_ResponsibleParty element'''
-    organization = party.xpath('./gmd:organisationName/gmx:Anchor', namespaces=party.nsmap)
-    if organization:
-        ns_prefix = party.nsmap['xlink']
-        sameAs = organization[0].get('{' + ns_prefix + '}href')
-
-        organization = {
-            'name': organization[0].text
-        }
-
-        if sameAs:
-            organization['smaeAs'] = sameAs
-
-        return organization
+    pass
 
 
 def filter_keywords(keyword_groups):
     '''Filter out the NODC org name from the keywords to reduce noise
     and flatten nested lists'''
-    keywords = []
-    for keyword_group in keyword_groups:
-        keyword_type = keyword_group.xpath('./gmd:type/gmd:MD_KeywordTypeCode/node()', namespaces=keyword_group.nsmap)
-        if keyword_type and keyword_type[0] != 'datacenter':
-            keywords.extend(keyword_group.xpath('./gmd:keyword/gmx:Anchor/node()', namespaces=keyword_group.nsmap))
-    return keywords
+    pass
 
 
 class NODCHarvester(XMLHarvester):
@@ -165,28 +107,6 @@ class NODCHarvester(XMLHarvester):
         'xsi': 'http://www.w3.org/2001/XMLSchema-instance'
     }
 
-    @property
-    def schema(self):
-        id_stanza = './gmd:identificationInfo/gmd:MD_DataIdentification/'
-        cite_stanza = id_stanza + 'gmd:citation/gmd:CI_Citation/'
-        return {
-            'title': (cite_stanza + 'gmd:title', compose(xml_text_only, single_result)),
-            'description': (id_stanza + 'gmd:abstract', compose(xml_text_only, single_result)),
-            'contributors': (cite_stanza + 'gmd:citedResponsibleParty/gmd:CI_ResponsibleParty', compose(parse_contributors, filter_to_contributors)),
-            'uris': {
-                'canonicalUri': (
-                    './gmd:fileIdentifier',
-                    compose(lambda x: str(self.canonical_base_url).format(x), xml_text_only, single_result)
-                ),
-            },
-            'publisher': (
-                cite_stanza + 'gmd:citedResponsibleParty/gmd:CI_ResponsibleParty',
-                compose(extract_organization, single_result, filter_to_publishers),
-            ),
-            'providerUpdatedDateTime': ('./gmd:dateStamp/gco:DateTime/node()', compose(datetime_formatter, single_result)),
-            'languages': ('./gmd:language/gmd:LanguageCode', compose(language_codes, xml_text_only_list, coerce_to_list)),
-            'subjects': (id_stanza + 'gmd:descriptiveKeywords/gmd:MD_Keywords', lambda x: filter_keywords(x)),
-        }
 
     def query_by_date(self, start_date, end_date):
         '''Use OAI-PMH interface to get a list of dataset ids for the given date range'''

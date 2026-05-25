@@ -128,10 +128,4 @@ class BaseHarvesterResponse(object):
             content = self.content
         return json.loads(content)
 
-    @property
-    def headers(self):
-        return CaseInsensitiveDict(json.loads(self.headers_str))
 
-    @property
-    def text(self):
-        return six.u(self.content)

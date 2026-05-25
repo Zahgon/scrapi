@@ -78,26 +78,6 @@ def dispatch(_event, status, _index=None, **kwargs):
 
 
 def logged(event, index=None):
-    def _logged(func):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            context = extract_context(func, *args, **kwargs)
-            dispatch(event, STARTED, _index=index, **context)
-            try:
-                res = func(*args, **kwargs)
-            except Skip as e:
-                # args[0] instead of message for Py3
-                dispatch(event, SKIPPED, _index=index, reason=e.args[0], **context)
-                return None
-            except Exception as e:
-                if settings.SENTRY_DSN:
-                    sentry.captureException()
-                dispatch(event, FAILED, _index=index, exception=e, **context)
-                raise
-            else:
-                dispatch(event, COMPLETED, _index=index, **context)
-            return res
-        return wrapped
     return _logged
 
 
@@ -119,12 +99,3 @@ def extract_context(func, *args, **kwargs):
     return dict(computed_args, **defaults)
 
 
-def creates_task(event):
-    def _creates_task(func):
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            res = func(*args, **kwargs)
-            dispatch(event, CREATED, **extract_context(func, *args, **kwargs))
-            return res
-        return wrapped
-    return _creates_task

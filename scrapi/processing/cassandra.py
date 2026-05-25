@@ -55,40 +55,10 @@ class DatabaseManager(BaseDatabaseManager):
         self._setup = True
         return True
 
-    def tear_down(self):
-        if not self._setup:
-            logger.warning('Attempting to tear down a database that was never setup')
 
-        if connection.cluster is not None:
-            connection.cluster.shutdown()
-        if connection.session is not None:
-            connection.session.shutdown()
 
-        self._setup = False
 
-    def clear(self, force=False):
-        assert force, 'clear_keyspace must be called with force'
-        assert self.keyspace != settings.CASSANDRA_KEYSPACE, 'Cannot erase the keyspace in settings'
 
-        management.delete_keyspace(self.keyspace)
-        self.tear_down()
-        return self.setup()
-
-    def register_model(self, model):
-        self._models.add(model)
-        model.__keyspace__ = self.keyspace
-        if self._setup:
-            management.sync_table(model)
-        return model
-
-    def celery_setup(self, *args, **kwargs):
-        self.tear_down()
-        self.setup()
-
-    @classmethod
-    def registered_model(cls, model):
-        cls._models.add(model)
-        return model
 
 
 class CassandraProcessor(BaseProcessor):
@@ -98,10 +68,6 @@ class CassandraProcessor(BaseProcessor):
     NAME = 'cassandra'
     _manager = None
 
-    @property
-    def manager(self):
-        self._manager = self._manager or DatabaseManager()
-        return self._manager
 
     @property
     def HarvesterResponseModel(self):
@@ -154,19 +120,7 @@ class CassandraProcessor(BaseProcessor):
             # create document
             return DocumentModel.create(docID=docID, source=source, **kwargs)
 
-    def documents(self, *sources):
-        q = DocumentModel.objects.timeout(500).allow_filtering().all().limit(100)
-        querysets = (q.filter(source=source) for source in sources) if sources else [q]
-        for query in querysets:
-            page = try_n_times(5, list, query)
-            while len(page) > 0:
-                for doc in page:
-                    doc.save()
-                    yield DocumentTuple(self.to_raw(doc), self.to_normalized(doc))
-                page = try_n_times(5, self.next_page, query, page)
 
-    def next_page(self, query, page):
-        return list(query.filter(docID__gt=page[-1].docID))
 
     def to_raw(self, doc):
         return RawDocument({

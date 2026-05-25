@@ -22,20 +22,6 @@ from scrapi.base.helpers import build_properties, datetime_formatter, compose, d
 logger = logging.getLogger(__name__)
 
 
-def process_urls(urls):
-    all_uris = [url['value'] for url in urls]
-
-    processed_uris = {
-        'canonicalUri': all_uris[0],
-        'objectUris': [],
-        'providerUris': all_uris
-    }
-
-    for url in all_uris:
-        if 'dx.doi.org' in url:
-            processed_uris['objectUris'].append(url)
-
-    return processed_uris
 
 
 class SpringerlHarvester(JSONHarvester):
@@ -49,40 +35,6 @@ class SpringerlHarvester(JSONHarvester):
     URL.args['api_key'] = settings.SPRINGER_API_KEY
     URL.args['p'] = 100
 
-    @property
-    def schema(self):
-        return {
-            'contributors': (
-                '/creators',
-                compose(
-                    default_name_parser,
-                    lambda authors: [author['creator'] for author in authors]
-                )
-            ),
-            'uris': ('/url', process_urls),
-            'title': '/title',
-            'providerUpdatedDateTime': ('/publicationDate', datetime_formatter),
-            'description': '/abstract',
-            'freeToRead': {
-                'startDate': ('/openaccess', '/publicationDate', lambda x, y: y if x == 'true' else None)
-            },
-            'publisher': {
-                'name': '/publisher'
-            },
-            'subjects': ('/genre', lambda x: [x] if x else []),
-            'otherProperties': build_properties(
-                ('url', '/url'),
-                ('doi', '/doi'),
-                ('isbn', '/isbn'),
-                ('printIsbn', '/printIsbn'),
-                ('electronicIsbn', '/electronicIsbn'),
-                ('volume', '/volume'),
-                ('number', '/number'),
-                ('startingPage', '/startingPage'),
-                ('copyright', '/copyright'),
-                ('identifier', '/identifier')
-            )
-        }
 
     def harvest(self, start_date=None, end_date=None):
 

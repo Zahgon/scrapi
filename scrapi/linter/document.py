@@ -10,31 +10,15 @@ from scrapi.util import json_without_bytes
 def strip_empty(document, required=tuple()):
     ''' Removes empty fields from the processed schema
     '''
-    new_doc = {}
-    for k, v in document.items():
-        if k in required:
-            new_doc[k] = v
-        else:
-            new_val = do_strip_empty(v)
-            if k == 'otherProperties':
-                new_val = [property for property in new_val if property.get('properties')]
-            if new_val:
-                new_doc[k] = new_val
-    return new_doc
+    pass
 
 
-def strip_list(l):
-    return list(filter(lambda x: x, map(do_strip_empty, l)))
 
 
 def do_strip_empty(value):
     ''' Filters empty values from container types
     '''
-    return {
-        dict: strip_empty,
-        list: strip_list,
-        tuple: strip_list
-    }.get(type(value), lambda x: x)(value)
+    pass
 
 
 class BaseDocument(object):
@@ -65,8 +49,6 @@ class BaseDocument(object):
         if validate:
             self.validate()
 
-    def validate(self, schema=None):
-        jsonschema.validate(self.attributes, schema or self.schema, format_checker=self.format_checker)
 
     def get(self, attribute, default=None):
         """
@@ -92,37 +74,6 @@ class BaseDocument(object):
 
 class RawDocument(BaseDocument):
 
-    @property
-    def schema(self):
-        return {
-            '$schema': 'http://json-schema.org/draft-04/schema#',
-            'type': 'object',
-            'properties': {
-                'doc': {
-                    'type': 'string',
-                    'description': 'The raw metadata'
-                },
-                'docID': {
-                    'type': 'string',
-                    'description': 'A service-unique identifier'
-                },
-                'source': {
-                    'type': 'string',
-                    'enum': [entry.short_name for entry in registry.values()],
-                    'description': 'short_name for the source'
-                },
-                'filetype': {
-                    'type': 'string',
-                    'description': 'The format of the metadata (ie, xml, json)'
-                }
-            },
-            'required': [
-                'doc',
-                'docID',
-                'source',
-                'filetype'
-            ]
-        }
 
     def __repr__(self):
         return "RawDocument(source='{source}', docID='{docID}', filetype='{filetype}', ...)".format(

@@ -10,8 +10,6 @@ logger = logging.getLogger()
 xrange = six.moves.xrange
 
 
-def timestamp():
-    return pytz.utc.localize(datetime.utcnow()).isoformat()
 
 
 def copy_to_unicode(element):
@@ -34,11 +32,6 @@ def copy_to_unicode(element):
             return element
 
 
-def stamp_from_raw(raw_doc, **kwargs):
-    kwargs['normalizeFinished'] = timestamp()
-    stamps = raw_doc['timestamps']
-    stamps.update(kwargs)
-    return stamps
 
 
 def format_date_with_slashes(date):

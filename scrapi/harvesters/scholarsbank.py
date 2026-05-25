@@ -10,8 +10,6 @@ from scrapi.base import OAIHarvester
 from scrapi.base import helpers
 
 
-def second_result(des):
-    return des[1] if len(des) > 1 else des[0] if des else ''
 
 
 class ScholarsbankHarvester(OAIHarvester):
@@ -26,8 +24,3 @@ class ScholarsbankHarvester(OAIHarvester):
         'date', 'description', 'setSpec', 'identifier'
     ]
 
-    @property
-    def schema(self):
-        return helpers.updated_schema(self._schema, {
-            'description': ('//dc:description/node()', second_result)
-        })

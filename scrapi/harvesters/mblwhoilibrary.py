@@ -14,11 +14,6 @@ class MblwhoilibraryHarvester(OAIHarvester):
     long_name = 'WHOAS at MBLWHOI Library'
     url = 'http://darchive.mblwhoilibrary.org'
 
-    @property
-    def schema(self):
-        return helpers.updated_schema(self._schema, {
-            "uris": ('//dc:identifier/node()', '//dc:relation/node()', helpers.oai_process_uris)
-        })
 
     base_url = 'http://darchive.mblwhoilibrary.org/oai/request'
     property_list = ['date', 'relation', 'identifier', 'type', 'format', 'setSpec']

@@ -114,11 +114,6 @@ class PushApiHarvester(BaseHarvester):
 
         return NormalizedDocument(document)
 
-    @property
-    def run_at(self):
-        return {
-            'minute': '*/15'
-        }
 
 
 harvesters = gen_harvesters()

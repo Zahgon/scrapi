@@ -24,11 +24,6 @@ class DryadHarvester(OAIHarvester):
                      'identifier', 'type', 'setSpec']
     timezone_granularity = True
 
-    @property
-    def schema(self):
-        return helpers.updated_schema(self._schema, {
-            "uris": ('//dc:relation/node()', '//dc:identifier/node()', helpers.oai_process_uris)
-        })
 
     def normalize(self, raw_doc):
         result = etree.XML(raw_doc['doc'])

@@ -21,40 +21,10 @@ from scrapi.base.helpers import build_properties, datetime_formatter
 logger = logging.getLogger(__name__)
 
 
-def process_NSF_contributors(firstname, lastname, awardeename):
-    # return something that's in the SHARE schema
-    return [
-        {
-            'name': '{} {}'.format(firstname, lastname),
-            'givenName': firstname,
-            'familyName': lastname,
-        },
-        {
-            'name': awardeename
-        }
-    ]
 
 
-def process_nsf_uris(awd_id):
-    nsf_url = 'http://www.nsf.gov/awardsearch/showAward?AWD_ID={}'.format(awd_id)
-    return {
-        'canonicalUri': nsf_url,
-        'providerUri': [nsf_url]
-    }
 
 
-def process_sponsorships(agency, awd_id, title):
-    return [
-        {
-            'sponsor': {
-                'sponsorName': agency
-            },
-            'award': {
-                'awardIdentifier': 'http://www.nsf.gov/awardsearch/showAward?AWD_ID={}'.format(awd_id),
-                'awardName': title
-            }
-        }
-    ]
 
 
 class NSFAwards(JSONHarvester):

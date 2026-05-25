@@ -25,52 +25,10 @@ from scrapi.linter.document import RawDocument
 logger = logging.getLogger(__name__)
 
 
-def collapse_list(list_of_strings):
-    text = ''.join(list_of_strings)
-    return text
 
 
-def elife_name_parser(names):
-    contributors = []
-    for i in range(0, len(names), 2):
-        chunka = names[i:i + 2]
-        chunkb = chunka[1].split(" ")
-        name = (chunka + chunkb)
-        del name[1]
-        contributors.append(name)
-
-    parsed_contributors = []
-    for contributor in contributors:
-        if sys.version_info < (3,):
-            contributor = map(lambda x: x.encode('utf-8'), contributor)
-
-        if len(contributor) == 3:
-            full_name = contributor[1] + str(" ") + contributor[2] + str(" ") + contributor[0]
-            first_name = contributor[1]
-            middle_name = contributor[2]
-            last_name = contributor[0]
-
-        else:
-            full_name = contributor[1] + str(" ") + contributor[0]
-            first_name = contributor[1]
-            middle_name = ""
-            last_name = contributor[0]
-
-        contributor_dict = {
-            'name': full_name,
-            'givenName': first_name,
-            'additionalName': middle_name,
-            'familyName': last_name
-        }
-
-        parsed_contributors.append(contributor_dict)
-
-    return parsed_contributors
 
 
-def elife_date_parser(date):
-    date_form = datetime.datetime(int(date[2]), int(date[1]), int(date[0]), 0, 0)
-    return date_form.date().isoformat()
 
 
 def fetch_commits(base_url, start_date, end_date):

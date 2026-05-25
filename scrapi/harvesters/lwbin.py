@@ -40,74 +40,26 @@ ORGANIZATIONS = (
 def is_organization(name):
     """Return a boolean to indicate if the name passed to the function is an organization
     """
-    words = name.split(' ')
-    return any(word.strip(";").lower() in ORGANIZATIONS for word in words)
+    pass
 
 
 def clean_authors(authors):
     """Cleam authors list.
     """
-    authors = authors.strip().replace('<span class="author-names">', '').replace('</span>', '')
-    authors = authors.split(',')
-
-    new_authors = []
-    for author in authors:
-        if is_organization(author):
-            new_authors.append(author)
-        else:
-            if ' and ' in author or ' <em>et al.</em>' in author:
-                split_name = author.replace(' <em>et al.</em>', '').split(' and ')
-                new_authors.extend(split_name)
-            else:
-                new_authors.append(author)
-    return new_authors
+    pass
 
 
 def process_contributors(authors, emails):
     """Process authors and add author emails
     If multiple authors and one email, put email in a new author
     """
-    emails = emails.split(',')
-    authors = clean_authors(authors)
-    contributor_list = []
-    append_emails = len(authors) == 1 and len(emails) == 1 and not emails[0] == u''  # append the email to the author only when 1 record is observed
-
-    for i, author in enumerate(authors):
-        if is_organization(author):
-            contributor = {
-                'name': author
-            }
-        else:
-            contributor = parse_name(author)
-
-        if append_emails:
-            contributor['email'] = emails[i]
-        contributor_list.append(contributor)
-
-    if not append_emails and emails[0] != u'':
-        for email in emails:
-            contributor = {
-                'name': '',
-                'email': email
-            }
-            contributor_list.append(contributor)
-
-    return contributor_list
+    pass
 
 
 def process_licenses(license_title, license_url, license_id):
     """Process licenses to comply with the normalized schema
     """
-
-    if not license_url:
-        return []
-    else:
-        license = {
-            'uri': license_url,
-            'description': "{} ({})".format(license_title, license_id) or ""
-        }
-
-        return [license]
+    pass
 
 
 def construct_url(url, dataset_path, end_point):
@@ -117,21 +69,13 @@ def construct_url(url, dataset_path, end_point):
     :param dataset_path: parent path of all datasets
     :param end_point: name of datasets
     """
-
-    return "/".join([url, dataset_path, end_point])
+    pass
 
 
 def process_object_uris(url, extras):
     """Extract doi from /extras, and return a list of object uris including /url and doi if it exists.
     """
-    doi = []
-    for d in extras:
-        if d['key'] == "DOI" or d['key'] == "DOI:":
-            doi.append(d['value'])
-    if doi == []:
-        return [url]
-    else:
-        return [url].extend(doi)
+    pass
 
 
 class LWBINHarvester(JSONHarvester):
@@ -144,38 +88,6 @@ class LWBINHarvester(JSONHarvester):
 
     record_encoding = None
 
-    @property
-    def schema(self):
-        return {
-            'title': ('/title', lambda x: x or ''),
-            'description': ('/notes'),
-            'providerUpdatedDateTime': ('/metadata_modified', datetime_formatter),
-            'uris': {
-                'canonicalUri': ('/name', lambda x: construct_url(self.url, self.dataset_path, x)),  # Construct new urls directing to LWBIN
-                'objectUris': ('/url', '/extras', process_object_uris)  # Default urls from the metadata directing to source pages
-            },
-            'contributors': ('/author', '/author_email', process_contributors),
-            'licenses': ('/license_title', '/license_url', '/license_id', process_licenses),
-            'tags': ('/tags', lambda x: [tag['name'].lower() for tag in (x or [])]),
-            'freeToRead': {
-                'startDate': ('/isopen', '/metadata_created', lambda x, y: parse(y).date().isoformat() if x else None)
-            },
-            'otherProperties': build_properties(
-                ('maintainer', '/maintainer'),
-                ('maintainerEmail', '/maintainer_email'),
-                ('revisionTimestamp', ('/revision_timestamp', datetime_formatter)),
-                ('id', '/id'),
-                ('metadataCreated', ('/metadata_created', datetime_formatter)),
-                ('state', '/state'),
-                ('version', '/version'),
-                ('creatorUserId', '/creator_user_id'),
-                ('type', '/type'),
-                ('numberOfResources', '/num_resources'),
-                ('numberOfTags', '/num_tags'),
-                ('name', '/name'),
-                ('groups', '/groups'),
-            )
-        }
 
     def harvest(self, start_date=None, end_date=None):
         """Returns a list of Rawdocuments (metadata)

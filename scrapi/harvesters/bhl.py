@@ -8,20 +8,12 @@ from scrapi.base.helpers import updated_schema, default_name_parser
 
 def institution_name_parser(names):
     ''' Parse institution names '''
-    return [{
-        'name': inst
-    } for inst in names]
+    pass
 
 
 def process_contributors(*args):
     ''' Parse people name for BHL'''
-    names = [name for sublist in args for name in sublist]
-    # Filter people names and clean dates and extra spaces.
-    people = [re.sub(r'\d+-(\d+)?', r'', n).strip() for n in filter(lambda x: ', ' in x, names)] or []
-    # Filter institution names and clean tabs.
-    inst = [re.sub(r'\\t', r'', n).strip() for n in filter(lambda x: ', ' not in x, names)] or []
-    # Parse names differently if they're people's or institutions' names.
-    return (default_name_parser(people) + institution_name_parser(inst)) or [{'name': ''}]
+    pass
 
 
 class BHLHarvester(OAIHarvester):
@@ -31,11 +23,6 @@ class BHLHarvester(OAIHarvester):
 
     base_url = 'http://www.biodiversitylibrary.org/oai'
 
-    @property
-    def schema(self):
-        return updated_schema(self._schema, {
-            'contributors': ('//dc:creator/node()', '//dc:contributor/node()', process_contributors)
-        })
 
     property_list = [
         'type', 'date', 'relation', 'setSpec', 'rights'
